@@ -11,7 +11,8 @@ var stanza = module.exports = {};
  * @param  {Object} stanza
  */
 stanza.onIq = function(stanza) {
-  if (stanza.type !== 'result') return;
+  var self = this;
+  if (stanza.attrs.type !== 'result') return;
 
   var iq = {};
 
@@ -27,7 +28,7 @@ stanza.onIq = function(stanza) {
 
       friends.forEach(function(friend){
         iq.friends.push({
-          id: friend.attrs.jid,
+          id: self.extractFbId(friend.attrs.jid),
           name: friend.attrs.name
         });
       });
@@ -40,7 +41,7 @@ stanza.onIq = function(stanza) {
     iq.type = 'vcard';
     iq.vcard = {
       name: vcard.getChild('FN').getText(),
-      from: stanza.from,
+      from: this.extractFbId(stanza.attrs.from),
       photo: typeof vcard.getChild('PHOTO').getChild('EXTVAL') !== 'undefined' ? vcard.getChild('PHOTO').getChild('EXTVAL').getText() : ''
     };
   }
@@ -54,10 +55,10 @@ stanza.onIq = function(stanza) {
  */
 stanza.onPresence = function(stanza) {
   var presence = {
-    from : stanza.from
+    from : this.extractFbId(stanza.attrs.from)
   };
 
-  if (stanza.type === 'unavailable') {
+  if (stanza.attrs.type === 'unavailable') {
     presence.type = 'unavailable';
   }
 
@@ -76,11 +77,13 @@ stanza.onPresence = function(stanza) {
  */
 stanza.onMessage = function(stanza) {
   var message = {
-    from: stanza.from,
-    type: stanza.type
+    from: this.extractFbId(stanza.attrs.from),
+    type: stanza.attrs.type
   };
 
-  if (stanza.type === 'chat') {
+  //console.log('message', message);
+
+  if (stanza.attrs.type === 'chat') {
     //Message
     var body = stanza.getChild('body');
     if (body) {
@@ -111,7 +114,19 @@ stanza.message = function(to, message) {
   return stanza;
 };
 
+/**
+ * Make a compose stanza
+ * @param {String} to
+ * @return {Object}
+ */
+
+stanza.compose = function(to) {
+  var stanza = new Element('message', { to: to, type: 'chat' });
+  stanza.c('composing', { xmlns: 'http://jabber.org/protocol/chatstates' });
+  return stanza;
+};
+
 
 stanza.extractFbId = function(from) {
-  return from.substr(1, from.indexOf('@'));
+  return from.substr(1, from.indexOf('@')-1);
 };
