@@ -18,13 +18,18 @@ function FacebookChat(params) {
 
   var self = this;
 
-  //Connect the client
-  this.client = new xmpp.Client({
+  var options = {
     jid: '-'+ params.facebookId +'@chat.facebook.com',
     api_key: params.appId,
     secret_key: params.appSecret,
     access_token: params.accessToken
-  });
+  };
+
+  if (params.host) { options.host = params.host; }
+  if (params.port) { options.port = params.port; }
+
+  //Connect the client
+  this.client = new xmpp.Client(options);
 
   //If a error is receive
   this.client.on('error', function(err){
