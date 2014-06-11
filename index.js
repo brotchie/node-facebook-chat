@@ -109,6 +109,14 @@ FacebookChat.prototype.send = function(to, message) {
 };
 
 /**
+ * Send a composing message
+ * @param {String} to -FACEBOOK_ID@chat.facebook.com
+ */
+FacebookChat.prototype.composing = function(to) {
+  this.client.send(stanzaUtils.compose(to));
+};
+
+/**
  * Send a vcard request
  * @param  {String} [to]
  */
