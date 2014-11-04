@@ -32,6 +32,9 @@ function FacebookChat(params) {
   this.client = new xmpp.Client(options);
 
   //If a error is receive
+  this.client.on('close', function() {
+    self.emit('close');
+  });
   this.client.on('error', function(err){
     self.emit('error', err);
   });
@@ -131,4 +134,8 @@ FacebookChat.prototype.vcard = function(to) {
     .c('vCard', { xmlns: 'vcard-temp'})
     .c('want-extval', { xmlns: 'http://www.facebook.com/xmpp/vcard/photo'})
   );
+};
+
+FacebookChat.prototype.end = function() {
+  this.client.end();
 };
